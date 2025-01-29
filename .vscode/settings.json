@@ -1,0 +1,33 @@
+{
+    "python.languageServer": "Pylance",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none",
+        "reportShadowedImports": "none"
+    },
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/lib.stubs",
+        "${workspaceFolder}/lib.local",
+        "${workspaceFolder}/stubs/adafruit-circuitpython-bundle-py/lib",
+        "${workspaceFolder}/stubs/circuitpython-community-bundle-py/lib",
+    ],
+    "[python]": {
+        "diffEditor.ignoreTrimWhitespace": false,
+        "editor.wordBasedSuggestions": "currentDocument",
+        "editor.indentSize": "tabSize",
+        "editor.tabSize": 4,
+        "editor.detectIndentation": false,
+        "editor.insertSpaces": false,
+    },
+    "[markdown]": {
+        "editor.unicodeHighlight.ambiguousCharacters": false,
+        "editor.unicodeHighlight.invisibleCharacters": true,
+        "editor.rulers": [80],
+        "editor.wordWrap": "wordWrapColumn",
+        "editor.wordWrapColumn": 80,
+        "editor.quickSuggestions": {
+            "comments": "on",
+            "strings": "on",
+            "other": "on"
+        }
+    },
+}

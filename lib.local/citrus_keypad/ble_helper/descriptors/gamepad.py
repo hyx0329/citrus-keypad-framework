@@ -1,0 +1,27 @@
+from micropython import const
+
+DESCRIPTOR = const((
+	b'\x05\x01'        # Usage Page (Generic Desktop Ctrls)
+	b'\x09\x05'        # Usage (Game Pad)
+	b'\xA1\x01'        # Collection (Application)
+	b'\x85\x05'        #   Report ID (5)
+	b'\x05\x09'        #   Usage Page (Button)
+	b'\x19\x01'        #   Usage Minimum (\x01)
+	b'\x29\x10'        #   Usage Maximum (\x10)
+	b'\x15\x00'        #   Logical Minimum (0)
+	b'\x25\x01'        #   Logical Maximum (1)
+	b'\x75\x01'        #   Report Size (1)
+	b'\x95\x10'        #   Report Count (16)
+	b'\x81\x02'        #   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+	b'\x05\x01'        #   Usage Page (Generic Desktop Ctrls)
+	b'\x15\x81'        #   Logical Minimum (-127)
+	b'\x25\x7F'        #   Logical Maximum (127)
+	b'\x09\x30'        #   Usage (X)
+	b'\x09\x31'        #   Usage (Y)
+	b'\x09\x32'        #   Usage (Z)
+	b'\x09\x35'        #   Usage (Rz)
+	b'\x75\x08'        #   Report Size (8)
+	b'\x95\x04'        #   Report Count (4)
+	b'\x81\x02'        #   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+	b'\xC0'            # End Collection
+))

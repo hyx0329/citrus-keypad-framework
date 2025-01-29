@@ -1,0 +1,3 @@
+Adafruit CircuitPython 9.2.3 on 2025-01-17; PCA10059 nRF52840 Dongle with nRF52840
+Board ID:pca10059
+UID:XXXXXXXXXXXXXXXX

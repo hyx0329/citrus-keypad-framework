@@ -1,0 +1,5 @@
+# for CircuitPython only
+asyncio
+adafruit_hid
+adafruit_ble
+adafruit_logging

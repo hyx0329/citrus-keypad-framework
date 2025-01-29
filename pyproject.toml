@@ -1,0 +1,10 @@
+[project]
+name = "citrus-keypad"
+version = "0.1.0"
+description = "toolbox"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "circuitpython-stubs==9.2.1",
+    "circup>=2.0.4",
+]
