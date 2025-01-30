@@ -21,9 +21,9 @@ async def gyro_mouse(dev: LemonKeypadRp2040) -> None:
 	sensitivity = 1.5
 
 	key_map = {
-		2: M_LEFT,
+		2: M_RIGHT,
 		3: M_MIDDLE,
-		4: M_RIGHT,
+		4: M_LEFT,
 	}
 
 	while True:
