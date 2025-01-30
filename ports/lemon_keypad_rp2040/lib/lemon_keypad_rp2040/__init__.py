@@ -33,8 +33,12 @@ class LemonKeypadRp2040(CitrusKeypad):
 				value_when_pressed=False,
 				pull=True,
 			)
+
+		# TODO: load IMU's calibration values
 		self.my_imu = imu
 		self.my_pixels = pixels
+		pixels.fill((0,0,0,)) # clear pixels
+
 		action_map = {
 			0: [
 				TD(KC.C_PLAY_PAUSE, None, level_gauge,),
