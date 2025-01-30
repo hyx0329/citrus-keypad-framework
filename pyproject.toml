@@ -1,10 +1,11 @@
 [project]
-name = "citrus-keypad"
+name = "circuitpython-workspace"
 version = "0.1.0"
 description = "toolbox"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "circuitpython-stubs==9.2.1",
+    "circuitpython-stubs==9.2.3",
     "circup>=2.0.4",
+    "jedi-language-server>=0.43.1",
 ]

@@ -1,12 +1,16 @@
+import os
 import asyncio
 import supervisor
+import adafruit_logging as logging
 
 from .behaviors import BaseAction, CompositeAction, TapDance, Transparent, LayerSwitchWithAction
 from .utils import is_coroutine
 
-import adafruit_logging as logging
 logger = logging.getLogger("TapEngine")
-logger.setLevel(logging.WARNING)
+if os.getenv('debug'):
+	logger.setLevel(logging.DEBUG)
+else:
+	logger.setLevel(logging.WARNING)
 
 try:
 	from typing import Optional, List, Dict, Callable, Any
@@ -62,7 +66,7 @@ class TapEngine:
 		self.undetermined_tap_dance_pressed = False
 
 		self.key_actions = None  # currently triggered key actions
-		self.default_layer = default_layer
+		self._default_layer = default_layer
 
 		self.layer_tracker = None
 		self._key_count = 0
@@ -92,7 +96,7 @@ class TapEngine:
 		if self.layer_tracker is None:
 			self.layer_tracker = [0] * key_count
 		self.layer_tracker.clear()
-		self.layer_tracker.append(self.default_layer)
+		self.layer_tracker.append(self._default_layer)
 
 		self._key_count = key_count
 
@@ -115,8 +119,8 @@ class TapEngine:
 				raise ValueError('Action map layers must be a list or tuple, however layer %s is not' % (k,))
 			if len(v) != key_count:
 				raise ValueError('Action map layers must strictly define %d key actions, however layer %s is not' % (key_count, k))
-		if self.default_layer not in self.action_map.keys():
-			raise ValueError("default layer(which now is `%s') must be defined in action map" % (self.default_layer,))
+		if self._default_layer not in self.action_map.keys():
+			raise ValueError("default layer(which now is `%s') must be defined in action map" % (self._default_layer,))
 		# TODO: more comprehensive checks
 
 	async def run(self):
@@ -136,7 +140,7 @@ class TapEngine:
 					await self.process_undetermined_action(supervisor.ticks_ms())
 					continue
 
-				#logger.debug("KEY EVENT: index %d, %s", new_event.key_number, new_event.pressed)
+				logger.debug("KEY EVENT: index %d, %s", new_event.key_number, new_event.pressed)
 
 				# here we process the undetermined action before the new key event
 				if new_event.pressed:
@@ -325,6 +329,7 @@ class TapEngine:
 
 		# invoke callback, signal the new key event
 		# TODO: maybe async only?
+		# FIXME: what if it's a class?
 		if callable(self.new_event_callback):
 			try:
 				result = self.new_event_callback(pressed, real_action)
@@ -342,6 +347,19 @@ class TapEngine:
 			if layer == self.layer_tracker[i]:
 				self.layer_tracker.pop(i)
 				break
+
+	@property
+	def default_layer(self):
+		return self._default_layer
+
+	@default_layer.setter
+	def default_layer(self, layer):
+		if layer not in self.action_map:
+			# do nothing, invalid layer key
+			return
+		self._default_layer = layer
+		if isinstance(self.layer_tracker, list):
+			self.layer_tracker[0] = layer
 
 
 __all__ = [

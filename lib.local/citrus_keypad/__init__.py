@@ -9,14 +9,19 @@ import adafruit_logging as logging
 from .tap_engine import TapEngine
 from .tap_engine.utils import is_coroutine
 from .hid_helper.agent import HidAgent
-from .ble_helper import BleHelper
 from .keycode import MouseCode, ConsumerControlCode
 
 from .ticks_utils import ticks_diff
 
+# not all platforms have ble support
+try:
+	from .ble_helper import BleHelper
+except ImportError:
+	pass
 
 try:
-	from typing import Any
+	from typing import Any, Dict, Union, Sequence, Callable
+	from keypad import Event
 except ImportError:
 	pass
 
@@ -30,23 +35,24 @@ else:
 
 class CitrusKeypad:
 	def __init__(self,
-				keypad,
-				action_map,
+				event_getter: Callable[[], Event],
+				action_map: Dict[Any, Sequence],
 				*,
-				ble_enabled: bool=False,
-				default_layer=0,
-				sleep_timer_second=0,
-				battery_report_interval_second=90,
-				ble_advertising_timeout_second=60):
+				ble_enabled: bool = False,
+				default_layer: Any = 0,
+				sleep_timer_second: int = 0,
+				battery_report_interval_second: int = 90,
+				ble_advertising_timeout_second: int = 60):
 		# misc configurable settings
-		# before calling run(), everything can be tweaked
-		self.keypad = keypad
+		# before calling run(), everything can be directly tweaked
+		self.event_getter = event_getter
 		self.action_map = action_map
-		self.ble_enabled = ble_enabled
+		self.ble_enabled = ble_enabled # setting this value to true will initialize the ble subsystem
 		self.default_layer = default_layer
 		self.sleep_timer_second = sleep_timer_second
 		self.battery_report_interval_second = battery_report_interval_second
 		self.ble_advertising_timeout_second = ble_advertising_timeout_second
+		# end configurable settings
 
 		# signal set by the sleep checker
 		self._signal_active = True
@@ -55,6 +61,7 @@ class CitrusKeypad:
 		self._hid_usb = HidAgent()
 		self._signal_usb_changed = True
 
+		# track active HID agent
 		self._current_active_agent = self._hid_usb
 		self._prefer_usb_agent = False
 
@@ -66,6 +73,9 @@ class CitrusKeypad:
 
 		Returns True if event is handled.
 
+		TapEngine will catch exceptions here so it will never crash the VM under
+		normal circumstances.
+
 		User may override this."""
 		self._signal_active = True
 
@@ -74,13 +84,14 @@ class CitrusKeypad:
 		logger.debug("Action: %s, Pressed: %s", action, pressed)
 		if isinstance(action, int):
 			if isinstance(action, MouseCode):
-				self._current_active_agent.mouse_codes(pressed, action)
+				# wrapped int cannot work with normal int's __ror__, cast to int
+				self._current_active_agent.mouse_codes(pressed, int(action))
 			elif isinstance(action, ConsumerControlCode):
 				self._current_active_agent.consumer_control_codes(pressed, action)
 			else:
 				self._current_active_agent.keyboard_codes(pressed, action)
 			return True
-		elif callable(action):
+		elif pressed and callable(action):
 			# release all before continuing
 			self._current_active_agent.release_all()
 			try:
@@ -205,7 +216,7 @@ class CitrusKeypad:
 
 	def run(self):
 		self._tap_engine = TapEngine(
-			self.keypad.events.get,
+			self.event_getter,
 			action_map=self.action_map,
 			new_event_callback=self.handle_key_action,
 			default_layer=self.default_layer,
@@ -227,8 +238,8 @@ class CitrusKeypad:
 
 		# check if sleep timer is configured
 		if self.sleep_timer_second > 0:
-			logger.info("Sleep timer second: %d", self.sleep_timer_second)
 			loop.create_task(self.task_sleep_timer())
+			logger.info("Sleep timer task created, value: %d", self.sleep_timer_second)
 
 		# run everything, the engine can represent all major functions
 		loop.run_until_complete(task_engine) # run_forever doesn't actually run forever, don't rely on that

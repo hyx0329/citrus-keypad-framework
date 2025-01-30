@@ -12,6 +12,7 @@ import usb_hid
 def should_enter_safemode() -> bool:
 	return False
 
+
 if should_enter_safemode():
 	microcontroller.on_next_reset(microcontroller.RunMode.SAFE_MODE)
 	microcontroller.reset()
@@ -50,17 +51,11 @@ if os.getenv('disable_midi'):
 # Setting up HID interface in advance
 hid_devices = [usb_hid.Device.KEYBOARD, usb_hid.Device.MOUSE, usb_hid.Device.CONSUMER_CONTROL]
 if os.getenv('use_nkro_keyboard'):
-	try:
-		from citrus_keypad.hid_helper.device_builder.nkro_keyboard import new_device
-		hid_devices[0] = new_device()
-	except Exception:
-		pass
+	from citrus_keypad.hid_helper.device_builder.nkro_keyboard import new_device
+	hid_devices[0] = new_device()
 if os.getenv('use_absolute_mouse'):
-	try:
-		from citrus_keypad.hid_helper.device_builder.absolute_mouse import new_device
-		hid_devices[1] = new_device()
-	except Exception:
-		pass
+	from citrus_keypad.hid_helper.device_builder.absolute_mouse import new_device
+	hid_devices[1] = new_device()
 usb_hid.enable(hid_devices)
 
 ### Extra environment setup ###

@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 
+DEFAULT_PORT="pca10059"
+DEFAULT_DIR="build"
+
 set -e
 
-target=$1
-target=${target:-build}
+TARGET_DIR=$1
+TARGET_DIR=${TARGET_DIR:-$DEFAULT_DIR}
+TARGET_PORT=${2:-$DEFAULT_PORT}
 
-[ -d "$target" ] || mkdir -p "$target"
+[ -d "$TARGET_DIR" ] || mkdir -p "$TARGET_DIR"
 
-rsync -r --times lib code.py boot.py safemode.py settings.toml "$target/"
-rsync -r --times -f'- lemon_keypad_rp2040' lib.local/ "$target/lib/"
-# rsync -r --times assets/ "$target/"
-sync -f "$target/code.py"
+rsync -r --times lib/ "$TARGET_DIR/lib/"
+rsync -r --times lib.local/ "$TARGET_DIR/lib/"
+rsync -r --times -f'- *requirements.txt' "ports/$TARGET_PORT/" "$TARGET_DIR/"
+sync -f "$TARGET_DIR/code.py"

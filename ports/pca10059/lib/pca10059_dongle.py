@@ -14,11 +14,11 @@ import citrus_keypad.keycode as KC
 
 # This is testing code on PCA10059
 # make a child class to apply hardware specific configurations
-class EbyteDongle(CitrusKeypad):
+class Pca10059Dongle(CitrusKeypad):
 	def __init__(self):
 
 		# Prepare necessary sane defaults, and let users happy with the defaults
-		keypad = Keys(
+		self.my_keypad = Keys(
 				(board.SW1,),
 				value_when_pressed=False,
 				pull=True,
@@ -30,14 +30,14 @@ class EbyteDongle(CitrusKeypad):
 
 		# initialize citrus keyboard framework
 		super().__init__(
-			keypad,
+			self.my_keypad.events.get,
 			action_map,
 			ble_enabled=True)
 
 		# Some customizations
 		# before calling run(), everything can be tweaked on demand
 		self.ble_agent.device_info = DeviceInfoService(manufacturer="Citrus Club", software_revision="0.1.0-rc2")
-		self.ble_agent.advertise_name = "Ebyte Dongle"
+		self.ble_agent.advertise_name = "PCA10059 Dongle"
 		# switch to ble by default
 		self.switch_to_ble()
 
@@ -57,6 +57,6 @@ class EbyteDongle(CitrusKeypad):
 
 	# example sleep implementation, not used though
 	def sleep(self):
-		self.keypad.deinit()
+		self.event_getter.deinit()
 		alarms = (alarm.pin.PinAlarm(pin=board.SW1, value=False, pull=True),)
 		alarm.exit_and_deep_sleep_until_alarms(alarms)

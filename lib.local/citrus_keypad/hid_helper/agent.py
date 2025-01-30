@@ -30,19 +30,6 @@ else:
 	logger.setLevel(logging.WARNING)
 
 
-# FIXME: it feels twisted
-def pass_through_to(attr_name: str, method_name: str):
-	def wrapper_creator(func):
-		def wrapper(self, *args, **kwargs):
-			real_function = getattr(getattr(self, attr_name, None), method_name, None)
-			if callable(real_function):
-				setattr(self, func.__name__, real_function)
-				return real_function(*args, **kwargs)
-			logger.debug('Missing "%s.%s" in instance of "%s"', attr_name, method_name, self.__class__)
-		return wrapper
-	return wrapper_creator
-
-
 # HID Agent: wrapper for common HID operations
 class HidAgent:
 
@@ -79,82 +66,67 @@ class HidAgent:
 		self.mouse = mouse
 		self.consumer_control = consumer_control
 
-	@pass_through_to('keyboard', 'press')
-	def keyboard_press(self, *keycodes: int) -> None:
-		pass
-
-	@pass_through_to('keyboard', 'release')
-	def keyboard_release(self, *keycodes: int) -> None:
-		pass
-
-	@pass_through_to('keyboard', 'release_all')
-	def keyboard_release_all(self) -> None:
-		pass
-
-	@pass_through_to('keyboard', 'send')
-	def keyboard_tap(self, *keycodes: int) -> None:
-		pass
-
-	@pass_through_to('keyboard', 'led_on')
 	def keyboard_led_on(self, led_code: int) -> bool:
-		pass
+		if self.keyboard is None:
+			return False
+		return self.keyboard.led_on(led_code)
 
 	@property
 	def keyboard_led_status(self) -> bytes:
 		return getattr(getattr(self, 'keyboard', None), 'led_status', b'\x00')
 
 	def keyboard_codes(self, pressed: bool, *keycodes: int) -> None:
+		"""press/release keyboard keys
+
+		Args:
+			pressed (bool): if pressed
+			*keycodes: press/release these keys all at once
+		"""
+		if self.keyboard is None:
+			return
 		if pressed:
-			self.keyboard_press(*keycodes)
+			self.keyboard.press(*keycodes)
 		else:
-			self.keyboard_release(*keycodes)
+			self.keyboard.release(*keycodes)
 
-	@pass_through_to('consumer_control', 'press')
-	def consumer_control_press(self, *keycodes: int) -> None:
-		pass
+	def consumer_control_codes(self, pressed: bool, consumer_code: int) -> None:
+		"""Only one consumer code can be activated at the same time. The new
+		one will overwrite the old one.
 
-	@pass_through_to('consumer_control', 'release')
-	def consumer_control_release(self) -> None:
-		pass
-
-	@pass_through_to('consumer_control', 'send')
-	def consumer_control_tap(self, *keycodes: int) -> None:
-		pass
-
-	def consumer_control_codes(self, pressed: bool, *keycodes) -> None:
+		Args:
+			pressed (bool): if pressed
+			consumer_code (int): consumer key code
+		"""
+		if self.consumer_control is None:
+			return
 		if pressed:
-			self.consumer_control_press(*keycodes)
+			self.consumer_control.press(consumer_code)
 		else:
-			self.consumer_control_release(*keycodes)
+			self.consumer_control.release()
 
-	@pass_through_to('mouse', 'press')
-	def mouse_press(self, *keycodes: int) -> None:
-		pass
+	def mouse_codes(self, pressed: bool, buttons: int) -> None:
+		"""Send mouse codes
 
-	@pass_through_to('mouse', 'release')
-	def mouse_release(self, *keycodes: int) -> None:
-		pass
+		Args:
+			pressed (bool): if it's pressed
+			buttons (int): a bitwise-or'd combination of precompiled mouse button codes
+		"""
+		if self.mouse is None:
+			return
+		if pressed:
+			self.mouse.press(buttons)
+		else:
+			self.mouse.release(buttons)
 
-	@pass_through_to('mouse', 'click')
-	def mouse_tap(self, *keycodes: int) -> None:
-		pass
-
-	@pass_through_to('mouse', 'move')
-	def mouse_move(self, x: int = 0, y: int = 0, wheel: int = 0) -> None:
-		pass
-
-	@pass_through_to('mouse', 'release_all')
-	def mouse_release_all(self) -> None:
-		pass
+	def mouse_move(self, x: int = 0, y: int = 0, wheel: int = 0):
+		if self.mouse is None:
+			return
+		self.mouse.move(x, y, wheel)
 
 	def release_all(self):
-		self.keyboard_release_all()
-		self.mouse_release_all()
-		# Only one consumer control key can be pressed at a time.
-		self.consumer_control_release()
-
-	def mouse_codes(self, pressed: bool, *keycodes) -> None:
-		if pressed:
-			self.mouse_press(*keycodes)
-		else:
-			self.mouse_release(*keycodes)
+		if self.keyboard is not None:
+			self.keyboard.release_all()
+		if self.mouse is not None:
+			self.mouse.release_all()
+		if self.consumer_control is not None:
+			self.consumer_control.release()

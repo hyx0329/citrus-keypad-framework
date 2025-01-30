@@ -90,20 +90,20 @@ class AbsoluteMouse:
 		self.press(buttons)
 		self.release(buttons)
 
-	def move(self, x=None, y=None, wheel=0):
+	def move(self, x=0, y=0, wheel=0):
 		"""Move the mouse and turn the wheel as directed.
 
-		:param x: Set pointer on x axis. 32767 = 100% to the right
-		:param y: Set pointer on y axis. 32767 = 100% to the bottom
+		:param x: Set pointer on x axis. 32768 = to the most right, 1 = to the most left, 0 = no move
+		:param y: Set pointer on y axis. 32768 = to the bottom, 1 = to the top, 0 = no move
 		:param wheel: Rotate the wheel this amount. Negative is toward the user, positive
 			is away from the user. The scrolling effect depends on the host.
 
 		Examples::
 
 			# Move to top right corner. Do not move up and down. Do not roll the scroll wheel.
-			m.move(32767, 0, 0)
+			m.move(32768, 0, 0)
 			# Same, with keyword arguments.
-			m.move(x=32767, y=0, wheel=0)
+			m.move(x=32768, y=0, wheel=0)
 
 
 			# Roll the mouse wheel away from the user.
@@ -111,11 +111,11 @@ class AbsoluteMouse:
 		"""
 
 		# Coordinates
-		if isinstance(x, int):
-			x = self._limit_coord(x)
+		if x > 0:
+			x = self._limit_coord(x-1)
 			struct.pack_into("<H", self.report, 1, x)
-		if isinstance(x, int):
-			y = self._limit_coord(y)
+		if y > 0:
+			y = self._limit_coord(y-1)
 			struct.pack_into("<H", self.report, 3, y)
 
 		# if no scroll, send current cordinates only

@@ -1,10 +1,18 @@
 {
-    "python.languageServer": "Pylance",
+    "python.languageServer": "Jedi",
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/ports/*/lib", // globs seem not implemented yet
+        "${workspaceFolder}/lib.stubs",
+        "${workspaceFolder}/lib.local",
+        "${workspaceFolder}/stubs/adafruit-circuitpython-bundle-py/lib",
+        "${workspaceFolder}/stubs/circuitpython-community-bundle-py/lib",
+    ],
     "python.analysis.diagnosticSeverityOverrides": {
         "reportMissingModuleSource": "none",
         "reportShadowedImports": "none"
     },
     "python.analysis.extraPaths": [
+        "${workspaceFolder}/ports/*/lib", // why this doesn't work?
         "${workspaceFolder}/lib.stubs",
         "${workspaceFolder}/lib.local",
         "${workspaceFolder}/stubs/adafruit-circuitpython-bundle-py/lib",

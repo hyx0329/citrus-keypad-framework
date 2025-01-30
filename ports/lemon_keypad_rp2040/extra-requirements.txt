@@ -1,0 +1,2 @@
+neopixel
+adafruit_lsm6ds
