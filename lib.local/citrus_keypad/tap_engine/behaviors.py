@@ -34,7 +34,7 @@ class CompositeAction(BaseAction):
 			hold: Any = None, # hold
 			layer: Optional[Hashable] = None, # hold
 			long_hold: Any = None, # long hold
-			tap_term_ms: int = 200,
+			tap_term_ms: int = 220, # NOTE: make it a little bigger than TapDance's tap_term_ms is better
 			hold_term_ms: int = 2000,
 			long_hold_start_ms: int = 5000,
 			tap_preferred: bool = False,
