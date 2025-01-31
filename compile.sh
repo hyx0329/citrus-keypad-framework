@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 
 source_dir=${1:-lib.local}
+# remove trailing slash
+source_dir=${source_dir%/}
 
 MPY_CROSS=${MPY_CROSS:-mpy-cross}
 OUTPUT_DIR=build/lib
+
+set -e
 
 while read -r SOURCE; do
     file_path=${SOURCE#$source_dir/}

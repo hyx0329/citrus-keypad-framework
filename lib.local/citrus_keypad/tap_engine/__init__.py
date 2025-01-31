@@ -4,7 +4,7 @@ import supervisor
 import adafruit_logging as logging
 
 from .behaviors import BaseAction, CompositeAction, TapDance, Transparent, LayerSwitchWithAction
-from .utils import is_coroutine
+from .utils import is_awaitable
 
 logger = logging.getLogger("TapEngine")
 if os.getenv('debug'):
@@ -41,8 +41,7 @@ class TapEngine:
 				*,
 				action_map: Optional[Dict[Any, List]] = None,
 				default_layer: Any = 0,
-				new_event_callback: Optional[Callable[[bool, Any], Any]] = None,
-				task_interval: float = 0):
+				new_event_callback: Optional[Callable[[bool, Any], Any]] = None):
 		"""TapEngine for complex key behavior handling
 
 		Args:
@@ -50,7 +49,6 @@ class TapEngine:
 			action_map (Optional[Dict[Hashable, List], optional): Aka the keymap, can be set later. Defaults to None.
 			default_layer (Hashable, optional): The index of the default layer. Defaults to 0.
 			new_event_callback (Optional[Callable[[bool, Any], Any]], optional): The function to call to pass the triggered action, can be async. Defaults to None.
-			task_interval (float, optional): The delay between tasks, in second, passed to `asyncio.sleep()`.
 		"""
 
 		self.key_event_getter = key_event_getter
@@ -73,9 +71,6 @@ class TapEngine:
 
 		# using this callback to send event notification
 		self.new_event_callback = new_event_callback
-
-		# used by asyncio.sleep when switching tasks
-		self.task_interval = 0
 
 	def get_key_count(self):
 		if self.action_map is None:
@@ -130,27 +125,31 @@ class TapEngine:
 		try:
 			while True:
 				# remember to switch task, put it here so will never forget
-				await asyncio.sleep(self.task_interval)
+				# this is the core task, poll as much as possible
+				await asyncio.sleep(0)
 
 				new_event = self.key_event_getter()
 
-				if new_event is None or new_event.key_number >= self._key_count:
-					# no key event or key index out of range
-					# process undetermined key by timeout
-					await self.process_undetermined_action(supervisor.ticks_ms())
-					continue
+				while new_event is not None and new_event.key_number < self._key_count:
 
-				logger.debug("KEY EVENT: index %d, %s", new_event.key_number, new_event.pressed)
+					logger.debug("KEY EVENT: index %d, %s", new_event.key_number, new_event.pressed)
 
-				# here we process the undetermined action before the new key event
-				if new_event.pressed:
-					# triggered by a new different key *press* event
-					await self.process_undetermined_action(new_event.timestamp, new_press_index=new_event.key_number)
-				else:
-					# process undetermined key by timeout
-					await self.process_undetermined_action(new_event.timestamp)
+					# here we process the undetermined action before the new key event
+					if new_event.pressed:
+						# triggered by a new different key *press* event
+						await self.process_undetermined_action(new_event.timestamp, new_press_index=new_event.key_number)
+					else:
+						# process undetermined key by timeout
+						await self.process_undetermined_action(new_event.timestamp)
 
-				await self.process_new_key_event(new_event.key_number, new_event.pressed, new_event.timestamp)
+					await self.process_new_key_event(new_event.key_number, new_event.pressed, new_event.timestamp)
+
+					# prepare next event
+					new_event = self.key_event_getter()
+
+				# no key event or key index out of range
+				# process undetermined key by timeout
+				await self.process_undetermined_action(supervisor.ticks_ms())
 
 		except asyncio.CancelledError:
 			# task cancelled, stop directly, clean everything
@@ -328,12 +327,10 @@ class TapEngine:
 			self.key_actions[key_index] = None
 
 		# invoke callback, signal the new key event
-		# TODO: maybe async only?
-		# FIXME: what if it's a class?
 		if callable(self.new_event_callback):
 			try:
 				result = self.new_event_callback(pressed, real_action)
-				if is_coroutine(result):
+				if is_awaitable(result):
 					await result
 			except Exception as e:
 				logger.error("Action handler failed with exception(%s): %s", e.__class__.__name__, e)
@@ -355,8 +352,7 @@ class TapEngine:
 	@default_layer.setter
 	def default_layer(self, layer):
 		if layer not in self.action_map:
-			# do nothing, invalid layer key
-			return
+			raise ValueError("layer name not in action map!")
 		self._default_layer = layer
 		if isinstance(self.layer_tracker, list):
 			self.layer_tracker[0] = layer

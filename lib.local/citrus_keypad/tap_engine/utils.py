@@ -1,5 +1,5 @@
-def is_coroutine(obj):
-	# This is the only we have on CircuitPython
-	if obj.__class__.__name__ is "coroutine":  # noqa: F632
-		return True
-	return False
+async def _dummy(): pass
+_type_awaitable = type(_dummy())
+
+def is_awaitable(obj):
+	return isinstance(obj, _type_awaitable)

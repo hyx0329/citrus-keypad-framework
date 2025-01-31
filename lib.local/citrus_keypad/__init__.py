@@ -7,7 +7,7 @@ import gc
 import adafruit_logging as logging
 
 from .tap_engine import TapEngine
-from .tap_engine.utils import is_coroutine
+from .tap_engine.utils import is_awaitable
 from .hid_helper.agent import HidAgent
 from .keycode import MouseCode, ConsumerControlCode
 
@@ -97,7 +97,7 @@ class CitrusKeypad:
 			try:
 				# call parameters: self,
 				result = action(self)
-				if is_coroutine(result):
+				if is_awaitable(result):
 					result = await result
 				logger.debug("Function call result: %s", result)
 			except Exception as e:

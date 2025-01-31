@@ -40,10 +40,11 @@ if should_enter_safemode():
 DRIVE_LABEL = os.getenv('drive_label')
 if DRIVE_LABEL is None:
 	pass
-elif DRIVE_LABEL != storage.getmount("/").label:
+elif (label := DRIVE_LABEL.upper()) != storage.getmount("/").label:
+	# FAT labels are uppercase
 	storage.remount("/", readonly=False)
 	m = storage.getmount("/")
-	m.label = DRIVE_LABEL
+	m.label = label
 	storage.remount("/", readonly=True)
 
 # Lock USB drive to protect from host writing
