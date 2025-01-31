@@ -13,7 +13,10 @@ TARGET_PORT=${2:-$DEFAULT_PORT}
 
 rsync -r --times lib/ "$TARGET_DIR/lib/"
 rsync -r --times lib.local/ "$TARGET_DIR/lib/"
-rsync -r --times -f'- *requirements.txt' "ports/$TARGET_PORT/" "$TARGET_DIR/"
+rsync -r --times \
+    -f'- *requirements.txt' \
+    -f'- README.md' \
+    "ports/$TARGET_PORT/" "$TARGET_DIR/"
 
 EXTRA="ports/$TARGET_PORT/extra-requirements.txt"
 
