@@ -156,11 +156,11 @@ class TapEngine:
 			# NOTE: the keys might not released
 			self.cleanup()
 
-	async def process_new_key_event(self, key_index, pressed, current_timestamp, *, current_layer_id=-1) -> None:
+	async def process_new_key_event(self, key_index, pressed, current_timestamp, *, current_layer_id=-1, action_override=None) -> None:
 		#logger.debug("Layer tracker: %s", self.layer_tracker)
 		if pressed:
 			current_layer = self.layer_tracker[current_layer_id]
-			action = self.action_map[current_layer][key_index]
+			action = self.action_map[current_layer][key_index] if action_override is None else action_override
 			if isinstance(action, CompositeAction):
 				#logger.debug("CompositeAction pending")
 				self.undetermined_key_index = key_index
@@ -269,30 +269,33 @@ class TapEngine:
 		elif isinstance(action, TapDance):
 			if (new_press_index >= 0) and (new_press_index != self.undetermined_key_index):
 				# determined by new press
+				# use process_new_key_event instead of notify_key_action to allow wrapping other special actions like CompositeAction
 				#logger.debug("trigger TapDance key #%d", self.undetermined_tap_dance_action_index)
 				tap_dance_action = action[self.undetermined_tap_dance_action_index]
+				last_undetermined = self.undetermined_key_index
+				self.undetermined_key_index = -1 # must clear undetermined key
 				if self.undetermined_tap_dance_pressed:
 					# press down
-					await self.notify_key_action(self.undetermined_key_index, True, tap_dance_action)
+					await self.process_new_key_event(last_undetermined, True, self.undetermined_key_timestamp, action_override=tap_dance_action)
 				else:
 					# click once
-					await self.notify_key_action(self.undetermined_key_index, True, tap_dance_action)
-					await self.notify_key_action(self.undetermined_key_index, False)
-				self.undetermined_key_index = -1
+					await self.process_new_key_event(last_undetermined, True, self.undetermined_key_timestamp, action_override=tap_dance_action)
+					await self.process_new_key_event(last_undetermined, False, current_timestamp)
 			else:
 				# check regularly if time since last press exceeds tap_term_ms
 				if time_delta > action.tap_term_ms:
 					#logger.debug("trigger TapDance key #%d", self.undetermined_tap_dance_action_index)
 					tap_dance_action = action[self.undetermined_tap_dance_action_index]
+					last_undetermined = self.undetermined_key_index
+					self.undetermined_key_index = -1 # must clear undetermined key
 					# trigger action
 					if self.undetermined_tap_dance_pressed:
 						# press down
-						await self.notify_key_action(self.undetermined_key_index, True, tap_dance_action)
+						await self.process_new_key_event(last_undetermined, True, self.undetermined_key_timestamp, action_override=tap_dance_action)
 					else:
 						# click once
-						await self.notify_key_action(self.undetermined_key_index, True, tap_dance_action)
-						await self.notify_key_action(self.undetermined_key_index, False)
-					self.undetermined_key_index = -1
+						await self.process_new_key_event(last_undetermined, True, self.undetermined_key_timestamp, action_override=tap_dance_action)
+						await self.process_new_key_event(last_undetermined, False, current_timestamp)
 		else:
 			#logger.warning("Unknown undetermined action: `%s'", action)
 			pass
