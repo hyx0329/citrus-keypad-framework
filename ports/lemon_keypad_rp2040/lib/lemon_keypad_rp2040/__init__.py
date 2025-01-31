@@ -42,14 +42,30 @@ class LemonKeypadRp2040(CitrusKeypad):
 		pixels.fill((0,0,0,)) # clear pixels
 
 		action_map = {
-			0: [
-				TD(KC.C_PLAY_PAUSE, None, level_gauge,),
-				CA(KC.C_SCAN_NEXT_TRACK, KC.C_FAST_FORWARD),
+			0: (
+				TD(CA(tap=KC.C_PLAY_PAUSE, layer=1), CA(layer="codes"), level_gauge,),
+				KC.C_SCAN_NEXT_TRACK,
 				KC.C_VOLUME_INCREMENT,
-				TD(KC.C_MUTE, None, gyro_mouse,),
+				TD(KC.C_MUTE, CA(layer="codes"), gyro_mouse,),
 				KC.C_VOLUME_DECREMENT,
-				CA(KC.C_SCAN_PREVIOUS_TRACK, KC.C_REWIND),
-			],
+				KC.C_SCAN_PREVIOUS_TRACK,
+			),
+			1: (
+				None,
+				KC.C_FAST_FORWARD,
+				None,
+				None,
+				None,
+				KC.C_REWIND,
+			),
+			"codes": (
+				"It always seems impossible until it's done.",
+				None,
+				None,
+				None,
+				None,
+				None,
+			),
 		}
 
 		super().__init__(
