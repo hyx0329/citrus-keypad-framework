@@ -17,6 +17,9 @@ Key features:
     - different actions for short & long & super long press
         - of course, with adjustable preferences
     - tap dance
+    - it basically handles only:
+        - layer changes
+        - multi-function keys having their actual code determined by the typing timing
 - Optional NKRO keyboard
     - both USB and BLE
 - Optional absolute mouse(like a touch panel)
