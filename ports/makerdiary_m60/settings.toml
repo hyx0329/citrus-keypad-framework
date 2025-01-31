@@ -1,0 +1,29 @@
+### Read before editing
+# comment starts with `#'
+# default values will be `None'
+# save this file in format `UTF-8 without BOM'
+
+# Note TOML is a little different from Python
+# and CircuitPython does't support booleans, float yet
+# ONLY integers and strings are supported
+# config examples:
+# integer = 123
+# hex_number = 0xabc
+# string = 'hello world' # can have emojis etc. so long as this file is saved in `UTF-8 without BOM'
+# unicode_string_escape = "\u20ac" # the euro sign (€)
+
+### Here starts real configuration
+
+## Citrus Keypad exclusive settings
+# USB drive label, up to 11 chars
+drive_label = "M60KBD"
+
+# Uncomment to enable corresponding features
+#lock_usb_drive = 1
+#disable_serial_console = 1
+#disable_usb_drive = 1
+#disable_midi = 1
+use_nkro_keyboard = 1
+#use_absolute_mouse = 1
+
+debug = 1
