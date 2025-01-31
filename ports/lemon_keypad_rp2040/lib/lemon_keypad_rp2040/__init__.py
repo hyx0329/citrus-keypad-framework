@@ -7,9 +7,11 @@ import asyncio
 from busio import I2C
 from keypad import Keys
 
-from citrus_keypad.prelude import CitrusKeypad, CompositeAction as CA, TapDance as TD, keycode as KC
-from neopixel import NeoPixel
+from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from adafruit_lsm6ds.lsm6ds3trc import LSM6DS3TRC
+from neopixel import NeoPixel
+
+from citrus_keypad.prelude import CitrusKeypad, CompositeAction as CA, TapDance as TD, keycode as KC
 
 from .playground.gyro_mouse import gyro_mouse
 from .playground.level_gauge import level_gauge
@@ -53,3 +55,17 @@ class LemonKeypadRp2040(CitrusKeypad):
 		super().__init__(
 			self.my_keypad.events.get,
 			action_map)
+
+	async def handle_key_action(self, pressed, action) -> bool:
+		if await super().handle_key_action(pressed, action):
+			# handled by original implementation
+			# handles standard keycodes and callables
+			return True
+		if isinstance(action, str) and pressed:
+			# maybe send the string to host via HID interface
+			# only handle it when pressed, not released
+			self.current_hid_agent.release_all()
+			layout = KeyboardLayoutUS(self.current_hid_agent.keyboard)
+			layout.write(action)
+			return True
+		return False
