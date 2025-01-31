@@ -277,6 +277,7 @@ class TapEngine:
 				if self.undetermined_tap_dance_pressed:
 					# press down
 					await self.process_new_key_event(last_undetermined, True, self.undetermined_key_timestamp, action_override=tap_dance_action)
+					await self.process_undetermined_action(current_timestamp, new_press_index=new_press_index, pressed=pressed)
 				else:
 					# click once
 					await self.process_new_key_event(last_undetermined, True, self.undetermined_key_timestamp, action_override=tap_dance_action)
@@ -292,6 +293,7 @@ class TapEngine:
 					if self.undetermined_tap_dance_pressed:
 						# press down
 						await self.process_new_key_event(last_undetermined, True, self.undetermined_key_timestamp, action_override=tap_dance_action)
+						await self.process_undetermined_action(current_timestamp, new_press_index=new_press_index, pressed=pressed)
 					else:
 						# click once
 						await self.process_new_key_event(last_undetermined, True, self.undetermined_key_timestamp, action_override=tap_dance_action)
