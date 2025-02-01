@@ -15,6 +15,7 @@ from citrus_keypad.prelude import CitrusKeypad, CompositeAction as CA, TapDance 
 
 from .playground.gyro_mouse import gyro_mouse
 from .playground.level_gauge import level_gauge
+from .playground.morse_input import morse_input
 
 
 BUTTON_PINS = (board.GP0, board.GP1, board.GP2, board.GP3, board.GP4, board.GP5,)
@@ -46,7 +47,7 @@ class LemonKeypadRp2040(CitrusKeypad):
 				TD(CA(tap=KC.C_PLAY_PAUSE, layer=1), CA(layer="codes"), level_gauge,),
 				KC.C_SCAN_NEXT_TRACK,
 				KC.C_VOLUME_INCREMENT,
-				TD(KC.C_MUTE, CA(layer="codes"), gyro_mouse,),
+				TD(KC.C_MUTE, CA(layer="codes"), gyro_mouse, None, morse_input,),
 				KC.C_VOLUME_DECREMENT,
 				KC.C_SCAN_PREVIOUS_TRACK,
 			),
