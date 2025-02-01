@@ -16,22 +16,10 @@ DESCRIPTOR = const((
 	b"\x95\x05"                   #   Report Count (5),
 	b"\x75\x01"                   #   Report Size (1 bit each),
 	b"\x91\x02"                   #   Output (Data, Variable, Absolute),
-	# padding, pad one bit, so IDs aligned
+	# padding, align to 1 byte
 	b"\x95\x01"                   #   Report Count (1),
-	b"\x75\x01"                   #   Report Size (1 bit each),
+	b"\x75\x03"                   #   Report Size (3 bit each),
 	b"\x91\x03"                   #   Output (Constant),
-	# last one, Shift(used in JP layout), with ID 7
-	b"\x05\x08"                   #   Usage Page (LEDs),
-	b"\x19\x07"                   #   Usage Minimum (7),
-	b"\x29\x07"                   #   Usage Maximum (7),
-	b"\x95\x05"                   #   Report Count (1),
-	b"\x75\x01"                   #   Report Size (1 bit each),
-	b"\x91\x02"                   #   Output (Data, Variable, Absolute),
-	# padding, pad one bit, so aligned to 1 byte
-	b"\x95\x01"                   #   Report Count (1),
-	b"\x75\x01"                   #   Report Size (1 bit each),
-	b"\x91\x03"                   #   Output (Constant),
-
 
 	# modifiers input report, bitmap, 1 byte
 	b"\x05\x07"                   #   Usage Page (Key Codes),

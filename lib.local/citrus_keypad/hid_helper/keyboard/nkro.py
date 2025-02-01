@@ -19,7 +19,6 @@ class NkroKeyboard:
 	LED_SCROLL_LOCK = const(0x04)
 	LED_COMPOSE = const(0x08)
 	LED_KANA = const(0x10)
-	LED_SHIFT = const(0x40)
 
 	def __init__(self, devices: Sequence[usb_hid.Device]) -> None:
 		"""Create a NKRO keyboard, which can have any keys pressed without

@@ -22,22 +22,10 @@ def new_device(report_id: int = 12):
 			0x95, 0x05,                     #   Report Count (5),
 			0x75, 0x01,                     #   Report Size (1 bit each),
 			0x91, 0x02,                     #   Output (Data, Variable, Absolute),
-			# padding, pad one bit, so IDs aligned
+			# padding, align to 1 byte
 			0x95, 0x01,                     #   Report Count (1),
-			0x75, 0x01,                     #   Report Size (1 bit each),
+			0x75, 0x03,                     #   Report Size (3 bit each),
 			0x91, 0x03,                     #   Output (Constant),
-			# last one, Shift(used in JP layout), with ID 7
-			0x05, 0x08,                     #   Usage Page (LEDs),
-			0x19, 0x07,                     #   Usage Minimum (7),
-			0x29, 0x07,                     #   Usage Maximum (7),
-			0x95, 0x05,                     #   Report Count (1),
-			0x75, 0x01,                     #   Report Size (1 bit each),
-			0x91, 0x02,                     #   Output (Data, Variable, Absolute),
-			# padding, pad one bit, so aligned to 1 byte
-			0x95, 0x01,                     #   Report Count (1),
-			0x75, 0x01,                     #   Report Size (1 bit each),
-			0x91, 0x03,                     #   Output (Constant),
-
 
 			# modifiers input report, bitmap, 1 byte
 			0x05, 0x07,                     #   Usage Page (Key Codes),
