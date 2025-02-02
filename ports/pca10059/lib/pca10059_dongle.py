@@ -57,6 +57,6 @@ class Pca10059Dongle(CitrusKeypad):
 
 	# example sleep implementation, not used though
 	def sleep(self):
-		self.event_getter.deinit()
+		self.my_keypad.deinit()
 		alarms = (alarm.pin.PinAlarm(pin=board.SW1, value=False, pull=True),)
 		alarm.exit_and_deep_sleep_until_alarms(alarms)
