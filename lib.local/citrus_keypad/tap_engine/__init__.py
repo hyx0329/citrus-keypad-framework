@@ -351,11 +351,11 @@ class TapEngine:
 				break
 
 	@property
-	def default_layer(self):
+	def default_layer(self) -> Any:
 		return self._default_layer
 
 	@default_layer.setter
-	def default_layer(self, layer):
+	def default_layer(self, layer: Any) -> Any:
 		if layer not in self.action_map:
 			raise ValueError("layer name not in action map!")
 		self._default_layer = layer
