@@ -362,6 +362,12 @@ class TapEngine:
 		if isinstance(self.layer_tracker, list):
 			self.layer_tracker[0] = layer
 
+	@property
+	def current_layer(self) -> Any:
+		if isinstance(self.layer_tracker, list) and len(self.layer_tracker) > 0:
+			return self.layer_tracker[-1]
+		return self._default_layer
+
 
 __all__ = [
 	"TapEngine",
