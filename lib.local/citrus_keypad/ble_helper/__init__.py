@@ -35,11 +35,9 @@ except ImportError:
 class BleHelper:
 	def __init__(self):
 		self.hid = HIDService(hid_descriptor=KB_DESC + MS_DESC + CC_DESC)
+		# TODO: make battery info optional?
 		self.battery = BatteryService()
 		self.battery.level = 100
-
-		# self.device_info = DeviceInfoService(software_revision=adafruit_ble.__version__,
-		# 									manufacturer="Adafruit Industries")
 
 		self.advertisement = ProvideServicesAdvertisement(self.hid, self.battery)
 		# Advertise as "Keyboard" (0x03C1) icon when pairing
@@ -66,8 +64,8 @@ class BleHelper:
 		return self.hid.devices
 
 	@property
-	def battery_level(self):
-		raise AttributeError("battery_level does not support reading!")
+	def battery_level(self) -> int:
+		return self.battery.level
 
 	@battery_level.setter
 	def battery_level(self, value: int):
