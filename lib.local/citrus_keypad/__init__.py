@@ -54,7 +54,6 @@ class CitrusKeypad:
 
 		# USB interface
 		self._hid_usb = HidAgent()
-		self._signal_usb_changed = True
 
 		# track active HID agent
 		self._current_active_agent = self._hid_usb
