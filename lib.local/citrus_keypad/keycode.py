@@ -13,6 +13,8 @@ MS = MouseCode
 # Please use search function to find the keycode corresponding to the target symbol
 # 请使用搜索功能来找到目标符号对应的键盘按键码
 
+# For more information, read https://usb.org/sites/default/files/hut1_6.pdf
+
 ### keyboard keys
 ### 键盘按键键码
 
