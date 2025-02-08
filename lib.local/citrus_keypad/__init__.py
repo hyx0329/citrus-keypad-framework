@@ -74,7 +74,7 @@ class CitrusKeypad:
 		# all plain integers are treated as keyboard keycode
 		# available via adafruit_hid.keycode.Keycode
 		logger.debug("Action: %s, Pressed: %s", action, pressed)
-		if isinstance(action, int):
+		if isinstance(action, int) and action <= 0xFFFF:
 			if isinstance(action, MouseCode):
 				# wrapped int cannot work with normal int's __ror__, cast to int
 				self._current_active_agent.mouse_codes(pressed, int(action))
