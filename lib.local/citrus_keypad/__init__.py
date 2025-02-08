@@ -40,7 +40,6 @@ class CitrusKeypad:
 				*,
 				ble_enabled: bool = False,
 				default_layer: Any = 0,
-				sleep_timer_second: int = 0,
 				battery_report_interval_second: int = 90,
 				ble_advertising_timeout_second: int = 60):
 		# misc configurable settings
@@ -49,13 +48,9 @@ class CitrusKeypad:
 		self.action_map = action_map
 		self.ble_enabled = ble_enabled # setting this value to true will initialize the ble subsystem
 		self.default_layer = default_layer
-		self.sleep_timer_second = sleep_timer_second
 		self.battery_report_interval_second = battery_report_interval_second
 		self.ble_advertising_timeout_second = ble_advertising_timeout_second
 		# end configurable settings
-
-		# signal set by the sleep checker
-		self._signal_active = True
 
 		# USB interface
 		self._hid_usb = HidAgent()
@@ -77,8 +72,6 @@ class CitrusKeypad:
 		normal circumstances.
 
 		User may override this."""
-		self._signal_active = True
-
 		# all plain integers are treated as keyboard keycode
 		# available via adafruit_hid.keycode.Keycode
 		logger.debug("Action: %s, Pressed: %s", action, pressed)
@@ -106,28 +99,6 @@ class CitrusKeypad:
 			return True
 		else:
 			return False
-
-	async def task_sleep_timer(self) -> None:
-		last_time = supervisor.ticks_ms()
-		while True:
-			await asyncio.sleep(10)
-
-			if self._signal_active:
-				self._signal_active = False # clear signal
-				last_time = supervisor.ticks_ms()
-				return
-
-			current_time = supervisor.ticks_ms()
-
-			# do not sleep if USB connected
-			if supervisor.runtime.usb_connected:
-				last_time = current_time
-				continue
-
-			if ticks_diff(current_time, last_time) // 1000 > self._time_to_sleep_second:
-				# time to deep sleep, deinit everything and setup alarms
-				# the program is terminated here
-				self.sleep()
 
 	async def task_monitor_usb_change(self) -> None:
 		usb_connected_last_time = False
@@ -236,19 +207,8 @@ class CitrusKeypad:
 			loop.create_task(self.task_ble_adv_management())
 			loop.create_task(self.task_update_battery_level())
 
-		# check if sleep timer is configured
-		if self.sleep_timer_second > 0:
-			loop.create_task(self.task_sleep_timer())
-			logger.info("Sleep timer task created, value: %d", self.sleep_timer_second)
-
 		# run everything, the engine can represent all major functions
 		loop.run_until_complete(task_engine) # run_forever doesn't actually run forever, don't rely on that
-
-	def sleep(self) -> None:
-		"""Put the hardware into low power state.
-
-		To be overridden by user."""
-		pass
 
 	def disconnect_ble(self) -> None:
 		self._ble_agent.disconnect_all()
