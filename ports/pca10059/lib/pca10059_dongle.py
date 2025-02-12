@@ -12,6 +12,8 @@ from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from citrus_keypad.prelude import CitrusKeypad, TapDance as TD
 import citrus_keypad.keycode as KC
 
+from citrus_keypad.async_event_queue import AsyncEventQueue
+
 # This is testing code on PCA10059
 # make a child class to apply hardware specific configurations
 class Pca10059Dongle(CitrusKeypad):
@@ -23,6 +25,7 @@ class Pca10059Dongle(CitrusKeypad):
 				value_when_pressed=False,
 				pull=True,
 			)
+		self.my_async_event_queue = AsyncEventQueue(self.my_keypad.events)
 		action_map = {
 			# 0: (TD(KC.A, KC.B, KC.C, tap_term_ms=500),)
 			0: (TD(KC.ESCAPE, KC.ENTER, "It always seems impossible until it's done.", tap_term_ms=500),)
@@ -32,7 +35,8 @@ class Pca10059Dongle(CitrusKeypad):
 		super().__init__(
 			self.my_keypad.events.get,
 			action_map,
-			ble_enabled=True)
+			ble_enabled=True,
+			async_event_getter=self.my_async_event_getter)
 
 		# Some customizations
 		# before calling run(), everything can be tweaked on demand
@@ -40,6 +44,10 @@ class Pca10059Dongle(CitrusKeypad):
 		self.ble_agent.advertise_name = "PCA10059 Dongle"
 		# switch to ble by default
 		self.switch_to_ble()
+
+	async def my_async_event_getter(self):
+		# task switch happens in lower level, `asyncio.sleep` is not required
+		return await self.my_async_event_queue
 
 	async def handle_key_action(self, pressed, action) -> bool:
 		if await super().handle_key_action(pressed, action):
