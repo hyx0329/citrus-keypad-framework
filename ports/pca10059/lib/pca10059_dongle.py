@@ -68,3 +68,15 @@ class Pca10059Dongle(CitrusKeypad):
 		self.my_keypad.deinit()
 		alarms = (alarm.pin.PinAlarm(pin=board.SW1, value=False, pull=True),)
 		alarm.exit_and_deep_sleep_until_alarms(alarms)
+
+	async def periodic_task_example(self):
+		i = 0
+		while True:
+			await asyncio.sleep(1)
+			print(i) # TODO: blink LED?
+			i+=1
+
+	def run(self):
+		# here's the example to add more custom tasks
+		asyncio.get_event_loop().create_task(self.periodic_task_example())
+		super().run()
