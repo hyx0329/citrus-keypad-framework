@@ -20,7 +20,7 @@ except ImportError:
 	pass
 
 try:
-	from typing import Any, Dict, Union, Sequence, Callable
+	from typing import Any, Dict, Union, Sequence, Callable, Awaitable
 	from keypad import Event
 except ImportError:
 	pass
@@ -38,6 +38,7 @@ class CitrusKeypad:
 				event_getter: Callable[[], Event],
 				action_map: Dict[Any, Sequence],
 				*,
+				async_event_getter: Optional[Callable[[], Awaitable[Event]]] = None,
 				ble_enabled: bool = False,
 				default_layer: Any = 0,
 				battery_report_interval_second: int = 90,
@@ -45,6 +46,7 @@ class CitrusKeypad:
 		# misc configurable settings
 		# before calling run(), everything can be directly tweaked
 		self.event_getter = event_getter
+		self.async_event_getter = async_event_getter
 		self.action_map = action_map
 		self.ble_enabled = ble_enabled # setting this value to true will initialize the ble subsystem
 		self.default_layer = default_layer
@@ -187,6 +189,7 @@ class CitrusKeypad:
 	def run(self):
 		self._tap_engine = TapEngine(
 			self.event_getter,
+			async_key_event_getter=self.async_event_getter,
 			action_map=self.action_map,
 			new_event_callback=self.handle_key_action,
 			default_layer=self.default_layer,

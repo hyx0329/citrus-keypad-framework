@@ -13,7 +13,7 @@ else:
 	logger.setLevel(logging.WARNING)
 
 try:
-	from typing import Optional, List, Dict, Callable, Any
+	from typing import Optional, List, Dict, Callable, Any, Awaitable
 	from keypad import Event
 except Exception:
 	pass
@@ -39,6 +39,7 @@ class TapEngine:
 	def __init__(self,
 				key_event_getter: Callable[[], Event],
 				*,
+				async_key_event_getter: Optional[Callable[[], Awaitable[Event]]] = None,
 				action_map: Optional[Dict[Any, List]] = None,
 				default_layer: Any = 0,
 				new_event_callback: Optional[Callable[[bool, Any], Any]] = None):
@@ -52,6 +53,8 @@ class TapEngine:
 		"""
 
 		self.key_event_getter = key_event_getter
+		if callable(async_key_event_getter):
+			self.wait_new_key_event = async_key_event_getter
 
 		# the default layer is layer 0, determined by `self.layer_tracker[0]`
 		self.action_map = action_map
@@ -118,17 +121,24 @@ class TapEngine:
 			raise ValueError("default layer(which now is `%s') must be defined in action map" % (self._default_layer,))
 		# TODO: more comprehensive checks
 
+	async def wait_new_key_event(self) -> Event:
+		# user can provide a AsyncEventQueue-based method to shift the poling and
+		# task switch burden to lower level code
+		await asyncio.sleep(0)
+		return self.key_event_getter()
+
 	async def run(self):
 		self.verify_action_map()
 		self.prepare()
 
 		try:
 			while True:
-				# remember to switch task, put it here so will never forget
-				# this is the core task, poll as much as possible
-				await asyncio.sleep(0)
-
-				new_event = self.key_event_getter()
+				if self.undetermined_key_index < 0:
+					# no undetermined key event, try to shift polling burden to lower level code
+					# switch task by the way
+					new_event = await self.wait_new_key_event()
+				else:
+					new_event = self.key_event_getter()
 
 				while new_event is not None and new_event.key_number < self._key_count:
 
