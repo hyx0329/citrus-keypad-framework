@@ -12,6 +12,7 @@ from adafruit_lsm6ds.lsm6ds3trc import LSM6DS3TRC
 from neopixel import NeoPixel
 
 from citrus_keypad.prelude import CitrusKeypad, CompositeAction as CA, TapDance as TD, keycode as KC
+from citrus_keypad.async_event_queue import AsyncEventQueue
 
 from .playground.gyro_mouse import gyro_mouse
 from .playground.level_gauge import level_gauge
@@ -36,6 +37,8 @@ class LemonKeypadRp2040(CitrusKeypad):
 				value_when_pressed=False,
 				pull=True,
 			)
+		# async friendly queue, read more at `AsyncEventQueue`
+		self.my_async_event_queue = AsyncEventQueue(self.my_keypad.events)
 
 		# TODO: load IMU's calibration values
 		self.my_imu = imu
@@ -71,7 +74,12 @@ class LemonKeypadRp2040(CitrusKeypad):
 
 		super().__init__(
 			self.my_keypad.events.get,
-			action_map)
+			action_map,
+			async_event_getter=self.my_async_event_getter)
+
+	async def my_async_event_getter(self):
+		# task switch happens in lower level, `asyncio.sleep` is not required
+		return await self.my_async_event_queue
 
 	async def handle_key_action(self, pressed, action) -> bool:
 		if await super().handle_key_action(pressed, action):
