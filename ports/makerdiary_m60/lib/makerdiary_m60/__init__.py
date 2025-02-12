@@ -8,6 +8,7 @@ from busio import I2C
 from keypad import KeyMatrix
 
 from citrus_keypad.prelude import CitrusKeypad, keycode as KC, CompositeAction as CA, Transparent
+from citrus_keypad.async_event_queue import AsyncEventQueue
 
 from .hardware_support import MATRIX_ROWS, MATRIX_COLS, MATRIX_COL2ROW_ANODES
 from .hardware_support import KEY_COORDS, BATVOLT_TO_PERCENT
@@ -25,6 +26,7 @@ class MakerdiaryM60(CitrusKeypad):
 				MATRIX_COLS,
 				MATRIX_COL2ROW_ANODES
 			)
+		self.my_async_event_queue = AsyncEventQueue(self.my_keymatrix.events)
 
 		action_map = {
 			0: (
@@ -47,13 +49,17 @@ class MakerdiaryM60(CitrusKeypad):
 			self.new_event_with_transform,
 			action_map,
 			ble_enabled=True,
-			sleep_timer_second=1800)
+			async_event_getter=self.my_async_event_getter)
 
 		self.switch_to_ble()
 
 		self.my_charging_sense = digitalio.DigitalInOut(board.CHARGING)
 		self.my_charging_sense.pull = digitalio.Pull.UP
 		self.my_bat_voltage_sense = analogio.AnalogIn(board.BATTERY)
+
+	async def my_async_event_getter(self):
+		# task switch happens in lower level, `asyncio.sleep` is not required
+		return await self.my_async_event_queue
 
 	def new_event_with_transform(self):
 		new_event = self.my_keymatrix.events.get()
